@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyPong", "MyPong\MyPong\MyPong.csproj", "{E85E8D58-4714-474B-B089-53F1110D2AC7}"
+EndProject
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "MyPongContent", "MyPong\MyPongContent\MyPongContent.contentproj", "{1FEE81BE-32BA-4B77-ABB4-7D82E53E121B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E85E8D58-4714-474B-B089-53F1110D2AC7}.Debug|x86.ActiveCfg = Debug|x86
+		{E85E8D58-4714-474B-B089-53F1110D2AC7}.Debug|x86.Build.0 = Debug|x86
+		{E85E8D58-4714-474B-B089-53F1110D2AC7}.Release|x86.ActiveCfg = Release|x86
+		{E85E8D58-4714-474B-B089-53F1110D2AC7}.Release|x86.Build.0 = Release|x86
+		{1FEE81BE-32BA-4B77-ABB4-7D82E53E121B}.Debug|x86.ActiveCfg = Debug|x86
+		{1FEE81BE-32BA-4B77-ABB4-7D82E53E121B}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
