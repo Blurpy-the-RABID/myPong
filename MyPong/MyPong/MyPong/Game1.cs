@@ -32,17 +32,20 @@ namespace MyPong {
 
         #region Variables
 
-        Texture2D ball;
-        Texture2D paddle1;
-        Texture2D paddle2;
+        Entity ball;
+        Entity paddle1;
+        Entity paddle2;
+        /*        Texture2D ball;
+                Texture2D paddle1;
+                Texture2D paddle2;
 
-        Vector2 ballPosition;
-        Rectangle ballBR;
-        Vector2 paddlePosition1;
-        Rectangle paddle1BR;
-        Vector2 paddlePosition2;
-        Rectangle paddle2BR;
-
+                Vector2 ballPosition;
+                Rectangle ballBR;
+                Vector2 paddlePosition1;
+                Rectangle paddle1BR;
+                Vector2 paddlePosition2;
+                Rectangle paddle2BR;
+        */
         int player1Score = 0;
         int player2Score = 0;
         // Store some information about the sprite's motion.
@@ -53,9 +56,6 @@ namespace MyPong {
         protected override void Initialize() {
             // TODO: Add your initialization logic here
             // Set the coordinates to draw the sprite at.
-            ballPosition = new Vector2(400, 0);
-            paddlePosition1 = new Vector2(0, 190);
-            paddlePosition2 = new Vector2(790, 190);
             base.Initialize();
         }
 
@@ -68,18 +68,13 @@ namespace MyPong {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // Load our ball & paddles.
+            ball = new Entity(Content.Load<Texture2D>("ball"), new Vector2(400, 0));
+            paddle1 = new Entity(Content.Load<Texture2D>("paddle1"), new Vector2(0, 190));
+            paddle2 = new Entity(Content.Load<Texture2D>("paddle2"), new Vector2(790, 190));
+            
             // Load our font for displaying the scoreboard.
             font = Content.Load<SpriteFont>("SpriteFont1");
-
-            // Here's the ball and its Bounding Rectangle.
-            ball = Content.Load<Texture2D>("ball");
-            ballBR = new Rectangle((int)ballPosition.X, (int)ballPosition.Y, ball.Width, ball.Height);
-
-            // Here's the paddles and their corresponding Bounding Rectangles.
-            paddle1 = Content.Load<Texture2D>("paddle1");
-            paddle2 = Content.Load<Texture2D>("paddle2");
-            paddle1BR = new Rectangle((int)paddlePosition1.X, (int)paddlePosition1.Y, paddle1.Width, paddle1.Height);
-            paddle2BR = new Rectangle((int)paddlePosition2.X, (int)paddlePosition2.Y, paddle2.Width, paddle2.Height);
         }
 
         /// <summary>
@@ -97,19 +92,13 @@ namespace MyPong {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime) {
             // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed) {
                 this.Exit();
+            }
 
-            // Update the position of the Bounding Rectangle for the ball so that it matches the position of the ball texture.
-            ballBR.X = (int)ballPosition.X;
-            ballBR.Y = (int)ballPosition.Y;
-
-            // Update the position of the Bounding Rectangles for each paddle so that they match the position of their corresponding textures.
-            paddle1BR.X = (int)paddlePosition1.X;
-            paddle1BR.Y = (int)paddlePosition1.Y;
-
-            paddle2BR.X = (int)paddlePosition2.X;
-            paddle2BR.Y = (int)paddlePosition2.Y;
+            ball.Update(gameTime);
+            paddle1.Update(gameTime);
+            paddle2.Update(gameTime);
 
             // These variables specify the boundaries of our game window.
             int MaxX = graphics.GraphicsDevice.Viewport.Width - ball.Width;
@@ -122,71 +111,61 @@ namespace MyPong {
             #region Paddle1 & Paddle2 Controls
             // Keyboard input controls for paddle1
             if (keyboardState.IsKeyDown(Keys.Up)) {
-                paddlePosition1.Y -= 5;
+                paddle1.Move(0.0f, -5.0f);
             }
 
             if (keyboardState.IsKeyDown(Keys.Down)) {
-                paddlePosition1.Y += 5;
+                paddle1.Move(0.0f, 5.0f);
             }
 
-            if (paddlePosition1.Y > MaxY - paddle1.Height + 20) {
-                paddlePosition1.Y = MaxY - paddle1.Height + 20;
-            }
-
-            else if (paddlePosition1.Y < MinY) {
-                paddlePosition1.Y = MinY;
-            }
-
+            paddle1.Clip(MinX, MaxX, MinY, MaxY);
+                        
             // Keyboard input controls for paddle2
             if (keyboardState.IsKeyDown(Keys.NumPad5)) {
-                paddlePosition2.Y -= 5;
+                paddle2.Move(0.0f, -5.0f);
             }
 
             if (keyboardState.IsKeyDown(Keys.NumPad2)) {
-                paddlePosition2.Y += 5;
+                paddle2.Move(0.0f, 5.0f);
             }
 
-            if (paddlePosition2.Y > MaxY - paddle2.Height + 20) {
-                paddlePosition2.Y = MaxY - paddle2.Height + 20;
-            }
+            paddle2.Clip(MinX, MaxX, MinY, MaxY);
 
-            else if (paddlePosition2.Y < MinY) {
-                paddlePosition2.Y = MinY;
-            }
             #endregion /* Paddle1 & Paddle2 Controls */
 
             #region Ball Speed, Top & Bottom Bouncing, & Score Keeping
             // Move the sprite by speed, scaled by elapsed time.
-            ballPosition += ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Vector2 P = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            ball.Move(P.X, P.Y);
 
             // This will keep track of when a player scores a point by hitting the ball into the other player's goal zone.
-            if (ballPosition.X > MaxX) {
+            if (ball.Position.X > MaxX) {
                 player1Score += 1;
-                ballPosition.X = 30;
+                ball.Set(30, ball.Position.Y);
             }
 
-            else if (ballPosition.X < MinX) {
+            else if (ball.Position.X < MinX) {
                 player2Score += 1;
-                ballPosition.X = 770;
+                ball.Set(770, ball.Position.Y);
             }
 
             // The following keeps the ball from falling off of the top & bottom margins of the game window, making it bounce off of the window's top & bottom edges instead.
-            if (ballPosition.Y > MaxY) {
+            if (ball.Position.Y > MaxY) {
                 ballSpeed.Y *= -1;
-                ballPosition.Y = MaxY;
+                ball.Set(ball.Position.X, MaxY);
             }
 
-            else if (ballPosition.Y < MinY) {
+            else if (ball.Position.Y < MinY) {
                 ballSpeed.Y *= -1;
-                ballPosition.Y = MinY;
+                ball.Set(ball.Position.X, MinY);
             }
             #endregion /* Ball Speed, Top & Bottom Bouncing, & Score Keeping */
 
             #region Paddle & Ball Interactions
             // The following makes the ball bounce off of paddle1 if their Bounding Rectangles collide.
-            if (ballBR.Intersects(paddle1BR)) {
+            if (ball.Intersects(paddle1)) {
                 if (keyboardState.IsKeyDown(Keys.Up)) {
-                    ballPosition.X = MinX + paddle1.Width;
+                    ball.Set(MinX + paddle1.Width, ball.Position.Y);
                     if (ballSpeed.X == -100.0f) {
                         ballSpeed.X = -150.0f;
                         ballSpeed.X *= -1;
@@ -206,7 +185,7 @@ namespace MyPong {
                 }
 
                 else if (keyboardState.IsKeyDown(Keys.Down)) {
-                    ballPosition.X = MinX + paddle1.Width;
+                    ball.Set(MinX + paddle1.Width, ball.Position.Y);
                     if (ballSpeed.X == -100.0f) {
                         ballSpeed.X = -150.0f;
                         ballSpeed.X *= -1;
@@ -226,15 +205,15 @@ namespace MyPong {
                 }
 
                 else {
-                    ballPosition.X = MinX + paddle1.Width;
+                    ball.Set(MinX + paddle1.Width, ball.Position.Y);
                     ballSpeed.X *= -1;
                 }
             }
 
             // The following makes the ball bounce off of paddle2 if their Bounding Rectangles collide.
-            if (ballBR.Intersects(paddle2BR)) {
+            if (ball.Intersects(paddle2)) {
                 if (keyboardState.IsKeyDown(Keys.NumPad5)) {
-                    ballPosition.X = MaxX - paddle2.Width;
+                    ball.Set(MaxX - paddle2.Width, ball.Position.Y);
                     if (ballSpeed.X == 100.0f) {
                         ballSpeed.X = 150.0f;
                         ballSpeed.X *= -1;
@@ -254,7 +233,7 @@ namespace MyPong {
                 }
 
                 else if (keyboardState.IsKeyDown(Keys.NumPad2)) {
-                    ballPosition.X = MaxX - paddle2.Width;
+                    ball.Set(MaxX - paddle2.Width, ball.Position.Y);
                     if (ballSpeed.X == 100.0f) {
                         ballSpeed.X = 150.0f;
                         ballSpeed.X *= -1;
@@ -274,7 +253,7 @@ namespace MyPong {
                 }
 
                 else {
-                    ballPosition.X = MaxX - paddle2.Width;
+                    ball.Set(MaxX - paddle2.Width, ball.Position.Y);
                     ballSpeed.X *= -1;
                 }
             }
@@ -294,9 +273,9 @@ namespace MyPong {
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
             spriteBatch.DrawString(font, "P1: " + player1Score, new Vector2(200, 30), Color.Black);
             spriteBatch.DrawString(font, "P2: " + player2Score, new Vector2(600, 30), Color.Black);
-            spriteBatch.Draw(ball, ballPosition, Color.White);
-            spriteBatch.Draw(paddle1, paddlePosition1, Color.White);
-            spriteBatch.Draw(paddle2, paddlePosition2, Color.White);
+            ball.Draw(spriteBatch);
+            paddle1.Draw(spriteBatch);
+            paddle2.Draw(spriteBatch);
             spriteBatch.End();
 
             base.Draw(gameTime);
