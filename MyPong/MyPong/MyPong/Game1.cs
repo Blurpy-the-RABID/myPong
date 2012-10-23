@@ -32,24 +32,13 @@ namespace MyPong {
 
         #region Variables
 
-        Entity ball;
+        Ball ball;
         Entity paddle1;
         Entity paddle2;
-        /*        Texture2D ball;
-                Texture2D paddle1;
-                Texture2D paddle2;
-
-                Vector2 ballPosition;
-                Rectangle ballBR;
-                Vector2 paddlePosition1;
-                Rectangle paddle1BR;
-                Vector2 paddlePosition2;
-                Rectangle paddle2BR;
-        */
+        Entity stripe;
+        
         int player1Score = 0;
         int player2Score = 0;
-        // Store some information about the sprite's motion.
-        Vector2 ballSpeed = new Vector2(100.0f, 100.0f);
 
         #endregion /* Variables */
 
@@ -69,9 +58,10 @@ namespace MyPong {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Load our ball & paddles.
-            ball = new Entity(Content.Load<Texture2D>("ball"), new Vector2(400, 0));
-            paddle1 = new Entity(Content.Load<Texture2D>("paddle1"), new Vector2(0, 190));
-            paddle2 = new Entity(Content.Load<Texture2D>("paddle2"), new Vector2(790, 190));
+            ball = new Ball(Content.Load<Texture2D>("ball"), new Vector2(400, 0));
+            paddle1 = new Entity(Content.Load<Texture2D>("paddle1"), new Vector2(30, 190));
+            paddle2 = new Entity(Content.Load<Texture2D>("paddle2"), new Vector2(760, 190));
+            stripe = new Entity(Content.Load<Texture2D>("stripe"), new Vector2(395, 0));
             
             // Load our font for displaying the scoreboard.
             font = Content.Load<SpriteFont>("SpriteFont1");
@@ -101,11 +91,11 @@ namespace MyPong {
             paddle2.Update(gameTime);
 
             // These variables specify the boundaries of our game window.
-            int MaxX = graphics.GraphicsDevice.Viewport.Width - ball.Width;
+            int MaxX = graphics.GraphicsDevice.Viewport.Width;
             int MinX = 0;
-            int MaxY = graphics.GraphicsDevice.Viewport.Height - ball.Height;
+            int MaxY = graphics.GraphicsDevice.Viewport.Height;
             int MinY = 0;
-
+            
             KeyboardState keyboardState = Keyboard.GetState();
 
             #region Paddle1 & Paddle2 Controls
@@ -117,6 +107,16 @@ namespace MyPong {
             if (keyboardState.IsKeyDown(Keys.Down)) {
                 paddle1.Move(0.0f, 5.0f);
             }
+
+#if DEBUG
+            if (keyboardState.IsKeyDown(Keys.Left)) {
+                paddle1.Move(-5.0f, 0.0f);
+            }
+
+            if (keyboardState.IsKeyDown(Keys.Right)) {
+                paddle1.Move(5.0f, 0.0f);
+            }
+#endif
 
             paddle1.Clip(MinX, MaxX, MinY, MaxY);
                         
@@ -135,128 +135,28 @@ namespace MyPong {
 
             #region Ball Speed, Top & Bottom Bouncing, & Score Keeping
             // Move the sprite by speed, scaled by elapsed time.
-            Vector2 P = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            ball.Move(P.X, P.Y);
+            Vector2 p = ball.Speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            ball.Move(p.X, p.Y);
 
             // This will keep track of when a player scores a point by hitting the ball into the other player's goal zone.
             if (ball.Position.X > MaxX) {
                 player1Score += 1;
-                ball.Set(30, ball.Position.Y);
+                ball.Set(MinX, ball.Position.Y);
             }
 
             else if (ball.Position.X < MinX) {
                 player2Score += 1;
-                ball.Set(770, ball.Position.Y);
+                ball.Set(MaxX, ball.Position.Y);
             }
 
             // The following keeps the ball from falling off of the top & bottom margins of the game window, making it bounce off of the window's top & bottom edges instead.
-            if (ball.Position.Y > MaxY) {
-                ballSpeed.Y *= -1;
-                ball.Set(ball.Position.X, MaxY);
-            }
+            ball.Clip(MinX, MaxX, MinY, MaxY);
 
-            else if (ball.Position.Y < MinY) {
-                ballSpeed.Y *= -1;
-                ball.Set(ball.Position.X, MinY);
-            }
             #endregion /* Ball Speed, Top & Bottom Bouncing, & Score Keeping */
 
             #region Paddle & Ball Interactions
-            // The following makes the ball bounce off of paddle1 if their Bounding Rectangles collide.
-            if (ball.Intersects(paddle1)) {
-                if (keyboardState.IsKeyDown(Keys.Up)) {
-                    ball.Set(MinX + paddle1.Width, ball.Position.Y);
-                    if (ballSpeed.X == -100.0f) {
-                        ballSpeed.X = -150.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = -50.0f;
-                    }
-                    else if (ballSpeed.X == -150.0f) {
-                        ballSpeed.X = -75.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = -200.0f;
-                    }
-
-                    else if (ballSpeed.X == -75.0f) {
-                        ballSpeed.X = -100.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = -100.0f;
-                    }
-                }
-
-                else if (keyboardState.IsKeyDown(Keys.Down)) {
-                    ball.Set(MinX + paddle1.Width, ball.Position.Y);
-                    if (ballSpeed.X == -100.0f) {
-                        ballSpeed.X = -150.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = 50.0f;
-                    }
-                    else if (ballSpeed.X == -150.0f) {
-                        ballSpeed.X = -75.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = 200.0f;
-                    }
-
-                    else if (ballSpeed.X == -75.0f) {
-                        ballSpeed.X = -100.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = 100.0f;
-                    }
-                }
-
-                else {
-                    ball.Set(MinX + paddle1.Width, ball.Position.Y);
-                    ballSpeed.X *= -1;
-                }
-            }
-
-            // The following makes the ball bounce off of paddle2 if their Bounding Rectangles collide.
-            if (ball.Intersects(paddle2)) {
-                if (keyboardState.IsKeyDown(Keys.NumPad5)) {
-                    ball.Set(MaxX - paddle2.Width, ball.Position.Y);
-                    if (ballSpeed.X == 100.0f) {
-                        ballSpeed.X = 150.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = -50.0f;
-                    }
-                    else if (ballSpeed.X == 150.0f) {
-                        ballSpeed.X = 75.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = -200.0f;
-                    }
-
-                    else if (ballSpeed.X == 75.0f) {
-                        ballSpeed.X = 100.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = -100.0f;
-                    }
-                }
-
-                else if (keyboardState.IsKeyDown(Keys.NumPad2)) {
-                    ball.Set(MaxX - paddle2.Width, ball.Position.Y);
-                    if (ballSpeed.X == 100.0f) {
-                        ballSpeed.X = 150.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = 50.0f;
-                    }
-                    else if (ballSpeed.X == 150.0f) {
-                        ballSpeed.X = 75.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = 200.0f;
-                    }
-
-                    else if (ballSpeed.X == 75.0f) {
-                        ballSpeed.X = 100.0f;
-                        ballSpeed.X *= -1;
-                        ballSpeed.Y = 100.0f;
-                    }
-                }
-
-                else {
-                    ball.Set(MaxX - paddle2.Width, ball.Position.Y);
-                    ballSpeed.X *= -1;
-                }
-            }
+            ball.ClipPaddle(paddle1, keyboardState, Keys.Up, Keys.Down);
+            ball.ClipPaddle(paddle2, keyboardState, Keys.NumPad5, Keys.NumPad2);
             #endregion /* Paddle & Ball Interactions */
 
             base.Update(gameTime);
@@ -267,15 +167,16 @@ namespace MyPong {
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
-            graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
+            graphics.GraphicsDevice.Clear(Color.Green);
 
             // Draw the sprites & scoreboard.
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-            spriteBatch.DrawString(font, "P1: " + player1Score, new Vector2(200, 30), Color.Black);
-            spriteBatch.DrawString(font, "P2: " + player2Score, new Vector2(600, 30), Color.Black);
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            stripe.Draw(spriteBatch);
             ball.Draw(spriteBatch);
             paddle1.Draw(spriteBatch);
             paddle2.Draw(spriteBatch);
+            spriteBatch.DrawString(font, "P1: " + player1Score, new Vector2(200, 30), Color.White);
+            spriteBatch.DrawString(font, "P2: " + player2Score, new Vector2(600, 30), Color.White);
             spriteBatch.End();
 
             base.Draw(gameTime);

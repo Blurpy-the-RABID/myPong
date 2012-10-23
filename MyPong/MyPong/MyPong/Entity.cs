@@ -15,7 +15,7 @@ namespace MyPong {
     class Entity {
         private Texture2D sprite;
         private Rectangle bounds;
-        private Vector2 position;
+        protected Vector2 position;
 
         public Entity(Texture2D sprite, Vector2 position) {
             this.sprite = sprite;
@@ -50,12 +50,16 @@ namespace MyPong {
             position.Y = y;
         }
 
-        public void Clip(int minX, int maxX, int minY, int maxY) {
-            if (Position.Y > maxY - Height + 20) {
-                position.Y = (maxY - Height + 20);
+        public virtual void Clip(int minX, int maxX, int minY, int maxY) {
+            if (Position.X > maxX - Width) {
+                position.X = (maxX - Width);
+            } else if (Position.X < minX) {
+                position.X = minX;
             }
 
-            else if (Position.Y < minY) {
+            if (Position.Y > maxY - Height) {
+                position.Y = (maxY - Height);
+            } else if (Position.Y < minY) {
                 position.Y = minY;
             }
         }
