@@ -86,10 +86,6 @@ namespace MyPong {
                 this.Exit();
             }
 
-            ball.Update(gameTime);
-            paddle1.Update(gameTime);
-            paddle2.Update(gameTime);
-
             // These variables specify the boundaries of our game window.
             int MaxX = graphics.GraphicsDevice.Viewport.Width;
             int MinX = 0;
@@ -116,10 +112,7 @@ namespace MyPong {
             if (keyboardState.IsKeyDown(Keys.Right)) {
                 paddle1.Move(5.0f, 0.0f);
             }
-#endif
-
-            paddle1.Clip(MinX, MaxX, MinY, MaxY);
-                        
+#endif                        
             // Keyboard input controls for paddle2
             if (keyboardState.IsKeyDown(Keys.NumPad5)) {
                 paddle2.Move(0.0f, -5.0f);
@@ -129,28 +122,30 @@ namespace MyPong {
                 paddle2.Move(0.0f, 5.0f);
             }
 
-            paddle2.Clip(MinX, MaxX, MinY, MaxY);
-
             #endregion /* Paddle1 & Paddle2 Controls */
 
-            #region Ball Speed, Top & Bottom Bouncing, & Score Keeping
             // Move the sprite by speed, scaled by elapsed time.
-            Vector2 p = ball.Speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            ball.Move(p.X, p.Y);
+            ball.Update(gameTime);
+            paddle1.Update(gameTime);
+            paddle2.Update(gameTime);
+
+            #region Ball Speed, Top & Bottom Bouncing, & Score Keeping
 
             // This will keep track of when a player scores a point by hitting the ball into the other player's goal zone.
             if (ball.Position.X > MaxX) {
                 player1Score += 1;
-                ball.Set(MinX, ball.Position.Y);
+                ball.Set(paddle1.Position.X + paddle1.Width, ball.Position.Y);
             }
 
             else if (ball.Position.X < MinX) {
                 player2Score += 1;
-                ball.Set(MaxX, ball.Position.Y);
+                ball.Set(paddle2.Position.X - paddle2.Width - ball.Width, ball.Position.Y);
             }
 
             // The following keeps the ball from falling off of the top & bottom margins of the game window, making it bounce off of the window's top & bottom edges instead.
             ball.Clip(MinX, MaxX, MinY, MaxY);
+            paddle1.Clip(MinX, MaxX, MinY, MaxY);
+            paddle2.Clip(MinX, MaxX, MinY, MaxY);
 
             #endregion /* Ball Speed, Top & Bottom Bouncing, & Score Keeping */
 

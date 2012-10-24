@@ -20,7 +20,7 @@ namespace MyPong {
         public Entity(Texture2D sprite, Vector2 position) {
             this.sprite = sprite;
             this.position = position;
-            this.bounds = new Rectangle((int)Position.X, (int)Position.Y, sprite.Width, sprite.Height);
+            this.bounds = new Rectangle((int)position.X, (int)position.Y, sprite.Width, sprite.Height);
         }
 
         public Vector2 Position { get { return position; } }
@@ -28,12 +28,12 @@ namespace MyPong {
         public int Height { get { return bounds.Height; } }
 
         public void Draw(SpriteBatch spriteBatch) {
-            spriteBatch.Draw(sprite, Position, Color.White);
+            spriteBatch.Draw(sprite, position, Color.White);
         }
 
-        public void Update(GameTime gameTime) {
-            bounds.X = (int)Position.X;
-            bounds.Y = (int)Position.Y;
+        public virtual void Update(GameTime gameTime) {
+            bounds.X = (int)position.X;
+            bounds.Y = (int)position.Y;
         }
 
         public bool Intersects(Entity entity) {
@@ -51,15 +51,15 @@ namespace MyPong {
         }
 
         public virtual void Clip(int minX, int maxX, int minY, int maxY) {
-            if (Position.X > maxX - Width) {
+            if (position.X > maxX - Width) {
                 position.X = (maxX - Width);
-            } else if (Position.X < minX) {
+            } else if (position.X < minX) {
                 position.X = minX;
             }
 
-            if (Position.Y > maxY - Height) {
+            if (position.Y > maxY - Height) {
                 position.Y = (maxY - Height);
-            } else if (Position.Y < minY) {
+            } else if (position.Y < minY) {
                 position.Y = minY;
             }
         }

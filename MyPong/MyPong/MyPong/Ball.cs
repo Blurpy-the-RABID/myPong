@@ -21,15 +21,18 @@ namespace MyPong {
             set { speed = value; }
         }
 
-        public override void Clip(int minX, int maxX, int minY, int maxY) {
-            base.Clip (minX, maxX, minY, maxY);
+        public override void Update(GameTime gameTime) {
+            base.Update(gameTime);
+            position += speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+        }
 
+        public override void Clip(int minX, int maxX, int minY, int maxY) {
             if (position.Y > maxY - Height) {
-                speed.Y *= -1;
+                speed.Y = -speed.Y;
                 position.Y = maxY - Height;
             }
             else if (position.Y < minY) {
-                speed.Y *= -1;
+                speed.Y = -speed.Y;
                 position.Y = minY;
             }
         }
@@ -41,18 +44,15 @@ namespace MyPong {
                     if (keyboardState.IsKeyDown(up) || keyboardState.IsKeyDown(down)) {
                         position.X = paddle.Position.X - paddle.Width - Width;
                         if (speed.X == 100.0f) {
-                            speed.X = 150.0f;
-                            speed.X *= -1;
+                            speed.X = -150.0f;
                             speed.Y = -50.0f;
                         }
                         else if (speed.X == 150.0f) {
-                            speed.X = 75.0f;
-                            speed.X *= -1;
+                            speed.X = -75.0f;
                             speed.Y = -200.0f;
                         }
                         else if (speed.X == 75.0f) {
-                            speed.X = 100.0f;
-                            speed.X *= -1;
+                            speed.X = -100.0f;
                             speed.Y = -100.0f;
                         }
                         if (keyboardState.IsKeyDown(up)) {
@@ -60,26 +60,23 @@ namespace MyPong {
                         }
                     }
                     else {
-                        position.X = paddle.Position.X + paddle.Width;
-                        speed.X *= -1;
+                        position.X = paddle.Position.X - paddle.Width - Width;
+                        speed.X = -speed.X;
                     }
                 }
                 else {
                     if (keyboardState.IsKeyDown(up) || keyboardState.IsKeyDown(down)) {
                         position.X = paddle.Position.X + paddle.Width;
                         if (speed.X == -100.0f) {
-                            speed.X = -150.0f;
-                            speed.X *= -1;
+                            speed.X = 150.0f;
                             speed.Y = 50.0f;
                         }
                         else if (speed.X == -150.0f) {
-                            speed.X = -75.0f;
-                            speed.X *= -1;
+                            speed.X = 75.0f;
                             speed.Y = 200.0f;
                         }
                         else if (speed.X == -75.0f) {
-                            speed.X = -100.0f;
-                            speed.X *= -1;
+                            speed.X = 100.0f;
                             speed.Y = 100.0f;
                         }
                         if (keyboardState.IsKeyDown(up)) {
@@ -87,7 +84,7 @@ namespace MyPong {
                         }
                     } else {
                         position.X = paddle.Position.X + paddle.Width;
-                        speed.X *= -1;
+                        speed.X = -speed.X;
                     }
                 }
             }
