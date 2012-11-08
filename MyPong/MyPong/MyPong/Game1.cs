@@ -31,10 +31,10 @@ namespace MyPong {
         /// </summary>
 
         #region Variables
-
+        
         Ball ball;
-        Entity paddle1;
-        Entity paddle2;
+        Paddle paddle1;
+        Paddle paddle2;
         Entity stripe;
         
         int player1Score = 0;
@@ -59,8 +59,8 @@ namespace MyPong {
 
             // Load our ball & paddles.
             ball = new Ball(Content.Load<Texture2D>("ball"), new Vector2(400, 0));
-            paddle1 = new Entity(Content.Load<Texture2D>("paddle1"), new Vector2(30, 190));
-            paddle2 = new Entity(Content.Load<Texture2D>("paddle2"), new Vector2(760, 190));
+            paddle1 = new Paddle(Content.Load<Texture2D>("paddle1"), new Vector2(30, 190));
+            paddle2 = new Paddle(Content.Load<Texture2D>("paddle2"), new Vector2(760, 190));
             stripe = new Entity(Content.Load<Texture2D>("stripe"), new Vector2(395, 0));
             
             // Load our font for displaying the scoreboard.
@@ -96,14 +96,11 @@ namespace MyPong {
 
             #region Paddle1 & Paddle2 Controls
             // Keyboard input controls for paddle1
-            if (keyboardState.IsKeyDown(Keys.Up)) {
-                paddle1.Move(0.0f, -5.0f);
-            }
-
-            if (keyboardState.IsKeyDown(Keys.Down)) {
-                paddle1.Move(0.0f, 5.0f);
-            }
-
+            paddle1.PaddleMove(keyboardState, Keys.Up, Keys.Down);
+            
+            // Keyboard input controls for paddle2
+            paddle2.PaddleMove(keyboardState, Keys.NumPad5, Keys.NumPad2);
+            paddle2.PaddleAI(ball);
 #if DEBUG
             if (keyboardState.IsKeyDown(Keys.Left)) {
                 paddle1.Move(-5.0f, 0.0f);
@@ -112,25 +109,14 @@ namespace MyPong {
             if (keyboardState.IsKeyDown(Keys.Right)) {
                 paddle1.Move(5.0f, 0.0f);
             }
-#endif                        
-            // Keyboard input controls for paddle2
-            if (keyboardState.IsKeyDown(Keys.NumPad5)) {
-                paddle2.Move(0.0f, -5.0f);
-            }
-
-            if (keyboardState.IsKeyDown(Keys.NumPad2)) {
-                paddle2.Move(0.0f, 5.0f);
-            }
-
+#endif
             #endregion /* Paddle1 & Paddle2 Controls */
 
-            // Move the sprite by speed, scaled by elapsed time.
             ball.Update(gameTime);
             paddle1.Update(gameTime);
             paddle2.Update(gameTime);
 
             #region Ball Speed, Top & Bottom Bouncing, & Score Keeping
-
             // This will keep track of when a player scores a point by hitting the ball into the other player's goal zone.
             if (ball.Position.X > MaxX) {
                 player1Score += 1;
@@ -142,7 +128,8 @@ namespace MyPong {
                 ball.Set(paddle2.Position.X - paddle2.Width - ball.Width, ball.Position.Y);
             }
 
-            // The following keeps the ball from falling off of the top & bottom margins of the game window, making it bounce off of the window's top & bottom edges instead.
+            // The following keeps the ball & paddles from falling off of the top & bottom margins of the game window,
+            // making it bounce off of the window's top & bottom edges instead.
             ball.Clip(MinX, MaxX, MinY, MaxY);
             paddle1.Clip(MinX, MaxX, MinY, MaxY);
             paddle2.Clip(MinX, MaxX, MinY, MaxY);
@@ -150,8 +137,10 @@ namespace MyPong {
             #endregion /* Ball Speed, Top & Bottom Bouncing, & Score Keeping */
 
             #region Paddle & Ball Interactions
+
             ball.ClipPaddle(paddle1, keyboardState, Keys.Up, Keys.Down);
             ball.ClipPaddle(paddle2, keyboardState, Keys.NumPad5, Keys.NumPad2);
+
             #endregion /* Paddle & Ball Interactions */
 
             base.Update(gameTime);
